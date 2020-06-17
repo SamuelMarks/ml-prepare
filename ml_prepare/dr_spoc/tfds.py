@@ -68,7 +68,6 @@ def dr_spoc_builder(dataset_name, data_dir, dr_spoc_init,
                                        'This is a \'template\' dataset.'.format(
             manual_dir
         )
-        manual_dir = os.path.join(manual_dir, dataset_name)
 
     def builder_factory(resolution, rgb, data_dir):
         """
@@ -143,6 +142,9 @@ def dr_spoc_builder(dataset_name, data_dir, dr_spoc_init,
         )
 
         return builder
+
+    if manual_dir is not None and os.path.basename(manual_dir) != dataset_name:
+        manual_dir = os.path.join(manual_dir, dataset_name)
 
     return builder_factory, data_dir, manual_dir
 
