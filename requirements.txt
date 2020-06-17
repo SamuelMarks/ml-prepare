@@ -1,0 +1,5 @@
+quantumrandom
+tensorflow_datasets
+sqlalchemy
+numpy
+pandas
