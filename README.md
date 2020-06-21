@@ -13,6 +13,36 @@ Prepares your datasets for ingestion into ML pipelines.
 
     pip install .
 
+## Usage
+
+    $ python -m ml_prepare -h
+
+    usage: python -m ml_prepare [-h] [--version] --dataset
+                                {dr_spoc,bmes,dr_spoc_grad_and_no_grad,dr_spoc_no_no_grad}
+                                [--retrieve RETRIEVE] [--generate GENERATE]
+                                [--tfds TFDS] [--image-height IMAGE_HEIGHT]
+                                [--image-width IMAGE_WIDTH]
+                                [--image-channels {grayscale,1,rgb,3}]
+    
+    Prepares your datasets for ingestion into ML pipelines.
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --version             show program's version number and exit
+      --dataset {dr_spoc,bmes,dr_spoc_grad_and_no_grad,dr_spoc_no_no_grad}
+      --retrieve RETRIEVE   Retrieve from this directory (or bucket).
+      --generate GENERATE   Generate dataset here. Shuffle and then symbolically
+                            link to this directory.
+      --tfds TFDS           Construct TFrecords and other metadata needed for
+                            TensorFlow Datasets, to this directory.
+      --image-height IMAGE_HEIGHT
+                            Image height
+      --image-width IMAGE_WIDTH
+                            Image width
+      --image-channels {grayscale,1,rgb,3}
+                            3 or 'rgb' for red|green|blue (RGB); 1 or 'grayscale'
+                            for grayscale
+
 ---
 
 ## License
