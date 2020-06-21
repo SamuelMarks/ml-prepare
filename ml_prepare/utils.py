@@ -2,11 +2,14 @@ from collections import deque
 from functools import reduce
 from itertools import islice
 from os import path
+from pprint import PrettyPrinter
 from random import sample
 
 import quantumrandom
 
 it_consumes = lambda it, n=None: deque(it, maxlen=0) if n is None else next(islice(it, n, n), None)
+
+pp = PrettyPrinter(indent=4).pprint
 
 
 def create_random_numbers(minimum, maximum, n):  # type: (int, int, int) -> [int]
@@ -37,3 +40,13 @@ def update_d(d, arg=None, **kwargs):
     if kwargs:
         d.update(kwargs)
     return d
+
+
+def run_once(f):
+    def wrapper(*args, **kwargs):
+        if not wrapper.has_run:
+            wrapper.has_run = True
+            return f(*args, **kwargs)
+
+    wrapper.has_run = False
+    return wrapper

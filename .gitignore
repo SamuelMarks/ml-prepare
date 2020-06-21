@@ -60,7 +60,6 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-.cache
 nosetests.xml
 coverage.xml
 *.cover
@@ -139,3 +138,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# ml_prepare specific
+ml_prepare/bmes/generated_types.py
+ml_prepare/_data/.cache

@@ -2,19 +2,21 @@
 
 from argparse import ArgumentParser, Action, ArgumentTypeError
 from enum import Enum
-from itertools import chain
-from os import path, listdir
+from os import path
 
 import tensorflow_datasets as tfds
 
-from ml_prepare import __version__
+from ml_prepare import __version__, datasets
 from ml_prepare import dr_spoc
+from ml_prepare.bmes.tfds import bmes_builder
 from ml_prepare.constants import IMAGE_RESOLUTION
-from ml_prepare.dr_spoc.tfds import dr_spoc_datasets, dr_spoc_datasets_set, dr_spoc_builder
-from ml_prepare.utils import camel_case
+from ml_prepare.datasets import datasets
+from ml_prepare.dr_spoc.tfds import dr_spoc_datasets_set, dr_spoc_builder
 
 
 # Originally from https://stackoverflow.com/a/60750535
+
+
 class EnumAction(Action):
     """
     Argparse action for handling Enums
@@ -128,21 +130,13 @@ class PathType(object):
 
 
 def _build_parser():
-    directory = path.dirname(__file__)
     parser = ArgumentParser(
         prog='python -m ml_prepare',
         description='Prepare your datasets for ingestion into ML pipelines.'
     )
     parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
 
-    parser.add_argument('--dataset',
-                        type=Enum('DatasetEnum', tuple(
-                            map(lambda p: (camel_case(p, upper=True), p),
-                                chain.from_iterable((
-                                    filter(lambda p: path.isfile(path.join(directory, p, '__init__.py')),
-                                           listdir(directory)),
-                                    dr_spoc_datasets[:-1]
-                                ))))),
+    parser.add_argument('--dataset', type=Enum('DatasetEnum', datasets),
                         action=EnumAction, required=True)
 
     parser.add_argument('--retrieve', help='Retrieve from this directory (or bucket).',
@@ -223,16 +217,25 @@ if __name__ == '__main__':
         print('data_dir:'.ljust(20), '{!r}\n'.format(data_dir),
               'manual_dir:'.ljust(20), '{!r}\n'.format(manual_dir),
               sep='')
+    elif args.dataset.value == 'bmes':
+        builder_factory, data_dir, manual_dir = bmes_builder(data_dir=args.tfds,
+                                                             init=args.generate,
+                                                             parent_dir=args.retrieve,
+                                                             manual_dir=args.generate,
+                                                             force_create=False)
+    else:
+        _parser.error('No dataset value')
+        raise Exception
 
-        builder = builder_factory(resolution=(args.image_height, args.image_width),
-                                  rgb=args.image_channels,
-                                  data_dir=data_dir)
+    builder = builder_factory(resolution=(args.image_height, args.image_width),
+                              rgb=args.image_channels,
+                              data_dir=data_dir)
 
-        builder.download_and_prepare(
-            download_config=tfds.download.DownloadConfig(
-                extract_dir=args.tfds,
-                manual_dir=manual_dir,
-                download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
-            ),
-            download_dir=args.tfds
-        )
+    builder.download_and_prepare(
+        download_config=tfds.download.DownloadConfig(
+            extract_dir=args.tfds,
+            manual_dir=manual_dir,
+            download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
+        ),
+        download_dir=args.tfds
+    )
