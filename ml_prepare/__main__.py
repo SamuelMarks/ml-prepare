@@ -7,12 +7,12 @@ from os import path
 import tensorflow_datasets as tfds
 
 from ml_prepare import __version__, datasets
-from ml_prepare import dr_spoc
-from ml_prepare.bmes.tfds import bmes_builder
+from ml_prepare._tfds.base import base_builder
 from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.datasets import datasets
-from ml_prepare.dr_spoc.tfds import dr_spoc_datasets_set, dr_spoc_builder
-
+from ml_prepare.dr_spoc.datasets import dr_spoc_datasets_set
+from ml_prepare.dr_spoc import get_data as dr_spoc_get_data
+from ml_prepare.bmes import get_data as bmes_get_data
 
 # Originally from https://stackoverflow.com/a/60750535
 
@@ -171,61 +171,20 @@ if __name__ == '__main__':
         _parser.error('tfds, generate, and/or retrieve must be specified')
 
     if args.dataset.value in dr_spoc_datasets_set:
-        if args.generate:
-            # Create directory structure filled with symlinked files:
-            #
-            # |-- dr_spoc
-            # |   |-- test
-            # |   |   |-- No gradable image
-            # |   |   |-- non-referable
-            # |   |   `-- referable
-            # |   |-- train
-            # |   |   |-- No gradable image
-            # |   |   |-- non-referable
-            # |   |   `-- referable
-            # |   `-- valid
-            # |       |-- No gradable image
-            # |       |-- non-referable
-            # |       `-- referable
-            # |-- dr_spoc_grad_and_no_grad
-            # |   |-- test
-            # |   |   |-- No gradable image
-            # |   |   `-- gradable
-            # |   |-- train
-            # |   |   |-- No gradable image
-            # |   |   `-- gradable
-            # |   `-- valid
-            # |       |-- No gradable image
-            # |       `-- gradable
-            # `-- dr_spoc_no_no_grad
-            #     |-- test
-            #     |   |-- non-referable
-            #     |   `-- referable
-            #     |-- train
-            #     |   |-- non-referable
-            #     |   `-- referable
-            #     `-- valid
-            #         |-- non-referable
-            #         `-- referable
-            dr_spoc.get_data(args.retrieve, args.generate)
-
-        builder_factory, data_dir, manual_dir = dr_spoc_builder(dataset_name=args.dataset.value,
-                                                                data_dir=args.tfds,
-                                                                manual_dir=args.generate,
-                                                                dr_spoc_parent_dir=args.generate,
-                                                                dr_spoc_init=False)
-        print('data_dir:'.ljust(20), '{!r}\n'.format(data_dir),
-              'manual_dir:'.ljust(20), '{!r}\n'.format(manual_dir),
-              sep='')
+        get_data = dr_spoc_get_data
     elif args.dataset.value == 'bmes':
-        builder_factory, data_dir, manual_dir = bmes_builder(data_dir=args.tfds,
-                                                             init=args.generate,
-                                                             parent_dir=args.retrieve,
-                                                             manual_dir=args.generate,
-                                                             force_create=False)
+        get_data = bmes_get_data
     else:
         _parser.error('No dataset value')
         raise Exception
+
+    builder_factory, data_dir, manual_dir = base_builder(data_dir=args.tfds,
+                                                         init=args.generate,
+                                                         parent_dir=args.retrieve,
+                                                         manual_dir=args.generate,
+                                                         force_create=False,
+                                                         dataset_name=args.dataset.value,
+                                                         get_data=get_data)
 
     builder = builder_factory(resolution=(args.image_height, args.image_width),
                               rgb=args.image_channels,

@@ -2,8 +2,6 @@
 
 from os import path
 
-import pandas as pd
-
 from ml_prepare.dr_spoc.utils import main
 
 
@@ -17,12 +15,12 @@ def get_data(root_directory, manual_dir):
     :type manual_dir: str or None
 
     :return:
-    :rtype: ```pd.DataFrame```
+    :rtype: ```str```
     """
     directory, df, filename2cat, combined_df = main(root_directory=root_directory,
                                                     manual_dir=manual_dir)
 
-    return combined_df
+    return directory  # combined_df
 
 
 if __name__ == '__main__':

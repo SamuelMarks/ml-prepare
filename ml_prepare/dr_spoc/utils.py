@@ -8,14 +8,14 @@ from contextlib import suppress
 from functools import partial
 from itertools import chain
 from operator import itemgetter
-from os import path, environ, listdir, makedirs, symlink
+from os import path, environ, listdir, makedirs, symlink, mkdir
 from platform import python_version_tuple
 
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine, text
 
-from ml_prepare.dr_spoc.tfds import dr_spoc_datasets
+from ml_prepare.dr_spoc.datasets import dr_spoc_datasets
 from ml_prepare.utils import it_consumes, create_random_numbers, ensure_is_dir
 
 if python_version_tuple()[0] == 2:
@@ -639,7 +639,9 @@ just = 70
 
 
 def main(root_directory, manual_dir):  # type: (str, str or None) -> (str, pd.DataFrame, pd.Series, pd.DataFrame)
-    it_consumes(map(ensure_is_dir, (root_directory, manual_dir)))
+    ensure_is_dir(root_directory)
+
+    it_consumes(map(mkdir, filter(path.isdir, (path.dirname(manual_dir), manual_dir))))
 
     paths = 'Fundus Photographs for AI', 'DR SPOC Dataset', 'DR SPOC Photo Dataset'
     levels = list(reversed(paths))

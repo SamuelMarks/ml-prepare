@@ -14,11 +14,35 @@ logger = get_logger('.'.join((path.basename(path.dirname(__file__)),
 
 def base_builder(dataset_name, data_dir, init,
                  parent_dir, manual_dir,
-                 get_data,
-                 force_create=False,
-                 supported_names=frozenset()):  # type: (str,str,str,str,str,((str, str) -> None),bool, frozenset) -> (((int, bool, str) -> (tfds.image.ImageLabelFolder)), str, str)
-    assert dataset_name in supported_names, '{!r} not found in {!r}'.format(dataset_name, supported_names)
+                 get_data, force_create=False):
+    """
 
+    :param dataset_name:
+    :type dataset_name: ``str``
+
+    :param data_dir:
+    :type data_dir: ``str``
+
+    :param init:
+    :type init: ``str``
+
+    :param parent_dir:
+    :type parent_dir: ``str``
+
+    :param manual_dir:
+    :type manual_dir: ``str``
+
+    :param get_data: Function which parses data source and creates symlinks, returning symlink dir
+    :type get_data: ``(str,str or None) -> str``
+
+    :param force_create:
+    :type force_create: ``bool``
+
+    :return: builder_factory, data_dir, manual_dir
+    :rtype: ((int, bool, str) -> (tfds.image.ImageLabelFolder)), str, str
+    """
+
+    manual_dir = _get_manual_dir(parent_dir, manual_dir)
     if init:
         if manual_dir is None:
             raise ValueError(
@@ -41,7 +65,6 @@ def base_builder(dataset_name, data_dir, init,
         if not data_dir.endswith(part):
             data_dir = path.join(data_dir, part)
 
-        manual_dir = _get_manual_dir(parent_dir, manual_dir)
         assert path.isdir(manual_dir), 'Manual directory {!r} does not exist. ' \
                                        'Create it and download/extract dataset artifacts ' \
                                        'in there. Additional instructions: ' \
@@ -53,7 +76,6 @@ def base_builder(dataset_name, data_dir, init,
         print('resolution:'.ljust(20), '{!r}'.format(resolution), sep='')
 
         class BaseImageLabelFolder(tfds.image.ImageLabelFolder):
-            print('datasets2classes:', datasets2classes, ';')
             def _info(self):
                 return tfds.core.DatasetInfo(
                     builder=self,
@@ -113,14 +135,13 @@ def base_builder(dataset_name, data_dir, init,
 base_builder.session = type('FakeSession', tuple(), {'_closed': True})()
 
 
-def _get_manual_dir(parent_dir, manual_dir):  # type: (str, str) -> str
-    if path.dirname(manual_dir) != 'DR SPOC Dataset' \
-        and not path.isdir(path.join(manual_dir, 'DR SPOC')) \
-        and not path.isdir(path.join(path.dirname(manual_dir), 'DR SPOC')) \
-        and path.basename(manual_dir) != 'symlinked_datasets':
-        return path.join(parent_dir, 'symlinked_datasets')
-
-    return manual_dir
+def _get_manual_dir(parent_dir, manual_dir):  # type: (str, str or None) -> str
+    return (
+        (manual_dir if path.basename(manual_dir) == 'symlinked_datasets'
+         else path.join(manual_dir, 'symlinked_datasets'))
+        if manual_dir is not None and path.isabs(manual_dir)
+        else path.join(parent_dir, 'symlinked_datasets')
+    )
 
 
 __all__ = ['base_builder']

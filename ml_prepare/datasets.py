@@ -1,7 +1,7 @@
 from itertools import chain
 from os import path, listdir
 
-from ml_prepare.dr_spoc.tfds import dr_spoc_datasets
+from ml_prepare.dr_spoc.datasets import dr_spoc_datasets
 from ml_prepare.utils import camel_case
 
 root_directory = path.dirname(__file__)
