@@ -3,3 +3,4 @@ tensorflow_datasets
 sqlalchemy
 numpy
 pandas
+xlrd

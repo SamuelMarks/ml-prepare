@@ -47,7 +47,7 @@ if __name__ == '__main__':
     _parser = _build_parser()
     args = _parser.parse_args()
 
-    if not args.retrieve or not args.generate or not args.tfds:
+    if (not args.retrieve and not args.generate) or not args.tfds:
         _parser.error('tfds, generate, and/or retrieve must be specified')
 
     build_tfds_dataset(
