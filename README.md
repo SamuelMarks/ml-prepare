@@ -45,10 +45,87 @@ Prepares your datasets for ingestion into ML pipelines.
 
 ### Matching what tfds automatically does with mnist and friends
 
+    $ export tfds="$HOME"'/tensorflow_datasets/downloads'
+    $ export generate="$HOME"'/tensorflow_datasets'
+
     $ python -m ml_prepare \
-             --dataset refuge \
-             --tfds "$HOME"'/tensorflow_datasets/downloads' \
-             --generate "$HOME"'/tensorflow_datasets'
+             --dataset 'bmes' \
+             --retrieve "$HOME"'/BMES123' \
+             --tfds "$tfds" \
+             --generate "$generate"
+    
+    $ python -m ml_prepare \
+             --dataset 'dr_spoc' \
+             --retrieve "$HOME"'/Fundus Photographs for AI' \
+             --tfds "$tfds" \
+             --generate "$generate"
+
+    $ python -m ml_prepare \
+             --dataset 'refuge' \
+             --tfds "$tfds" \
+             --generate "$generate"
+
+    $ tree -dQ --charset ascii
+    .
+    |-- "downloads"
+    |   `-- "tensorflow_datasets"
+    |       |-- "bmes"
+    |       |   `-- "2.0.0.incomplete3PUC97"
+    |       |-- "dr_spoc"
+    |       |   `-- "2.0.0"
+    |       |-- "dr_spoc_grad_and_no_grad"
+    |       |   `-- "2.0.0"
+    |       `-- "dr_spoc_no_no_grad"
+    |           `-- "2.0.0.incompleteD5IALU"
+    |-- "refuge"
+    |   `-- "r224-224-rgb"
+    |       `-- "0.0.1"
+    `-- "symlinked_datasets"
+        |-- "bmes"
+        |   |-- "test"
+        |   |   |-- "glaucoma"
+        |   |   `-- "no_glaucoma"
+        |   |-- "train"
+        |   |   |-- "glaucoma"
+        |   |   `-- "no_glaucoma"
+        |   `-- "valid"
+        |       |-- "glaucoma"
+        |       `-- "no_glaucoma"
+        |-- "dr_spoc"
+        |   |-- "test"
+        |   |   |-- "No gradable image"
+        |   |   |-- "non-referable"
+        |   |   `-- "referable"
+        |   |-- "train"
+        |   |   |-- "No gradable image"
+        |   |   |-- "non-referable"
+        |   |   `-- "referable"
+        |   `-- "valid"
+        |       |-- "No gradable image"
+        |       |-- "non-referable"
+        |       `-- "referable"
+        |-- "dr_spoc_grad_and_no_grad"
+        |   |-- "test"
+        |   |   |-- "No gradable image"
+        |   |   `-- "gradable"
+        |   |-- "train"
+        |   |   |-- "No gradable image"
+        |   |   `-- "gradable"
+        |   `-- "valid"
+        |       |-- "No gradable image"
+        |       `-- "gradable"
+        `-- "dr_spoc_no_no_grad"
+            |-- "test"
+            |   |-- "non-referable"
+            |   `-- "referable"
+            |-- "train"
+            |   |-- "non-referable"
+            |   `-- "referable"
+            `-- "valid"
+                |-- "non-referable"
+                `-- "referable"
+    
+    57 directories
 
 ---
 

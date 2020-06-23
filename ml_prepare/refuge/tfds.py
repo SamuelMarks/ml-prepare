@@ -52,7 +52,8 @@ class Refuge(tfds.core.GeneratorBasedBuilder):
                 'segmentation': tfds.features.Image(shape=(h, w, 1)),
                 'label': tfds.features.Tensor(dtype=tf.bool, shape=()),
                 'macular_center': tfds.features.Tensor(
-                    dtype=tf.float32, shape=(2,)),
+                    dtype=tf.float32, shape=(2,)
+                ),
                 'index': tfds.features.Tensor(dtype=tf.int64, shape=()),
             }),
             homepage=self.URL,

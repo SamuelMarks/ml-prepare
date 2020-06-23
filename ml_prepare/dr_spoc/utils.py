@@ -6,7 +6,7 @@ from codecs import encode
 from collections import Counter
 from contextlib import suppress
 from functools import partial
-from itertools import chain
+from itertools import chain, filterfalse
 from operator import itemgetter
 from os import path, environ, listdir, makedirs, symlink, mkdir
 from platform import python_version_tuple
@@ -641,9 +641,16 @@ just = 70
 def main(root_directory, manual_dir):  # type: (str, str or None) -> (str, pd.DataFrame, pd.Series, pd.DataFrame)
     ensure_is_dir(root_directory)
 
-    it_consumes(map(mkdir, filter(path.isdir, (path.dirname(manual_dir), manual_dir))))
+    it_consumes(map(mkdir, filterfalse(path.isdir, (path.dirname(manual_dir), manual_dir))))
 
     paths = 'Fundus Photographs for AI', 'DR SPOC Dataset', 'DR SPOC Photo Dataset'
+    if path.basename(root_directory) == paths[0]:
+        root_directory = path.dirname(root_directory)
+    elif path.basename(root_directory) == paths[1]:
+        root_directory = path.dirname(path.dirname(root_directory))
+    elif path.basename(root_directory) == paths[2]:
+        root_directory = path.dirname(path.dirname(path.dirname(root_directory)))
+
     levels = list(reversed(paths))
     if root_directory.endswith(path.join(*paths)):
         for _ in range(len(levels)):

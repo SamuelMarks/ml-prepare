@@ -34,7 +34,7 @@ import numpy as np
 
 from ml_prepare import get_logger
 from ml_prepare.cache import Cache, redis_cursor
-from ml_prepare.utils import create_random_numbers, it_consumes, pp, run_once
+from ml_prepare.utils import create_random_numbers, it_consumes, run_once
 
 logger = get_logger(modules[__name__].__name__)
 # logger.setLevel(CRITICAL)
@@ -581,7 +581,7 @@ def get_data(base_dir, split_dir,
                                    test_ratio=test_ratio,
                                    train_positive_ratio=train_positive_ratio,
                                    test_positive_ratio=test_positive_ratio,
-                                   split_dir=path.join(split_dir, 'symlinked_datasets', 'bmes'),
+                                   split_dir=get_sym_dir(split_dir),
                                    max_imgs=max_imgs)
 
 
@@ -596,8 +596,7 @@ def prepare_bmes_splits(root_dir):  # type: (str) -> Iterator[SplitFolder]
     subdirs = {'validation': 'valid'}
 
     assert root_dir is not None
-    if path.basename(path.dirname(root_dir)) != 'symlinked_datasets':
-        root_dir = path.join(root_dir, 'symlinked_datasets', 'bmes')
+    root_dir = get_sym_dir(root_dir)
 
     def process_split(split):
         folder = path.join(root_dir, subdirs.get(split, split))
@@ -625,6 +624,13 @@ def prepare_bmes_splits(root_dir):  # type: (str) -> Iterator[SplitFolder]
         return SplitFolder(split=split, folder=folder)
 
     return imap(process_split, ('train', 'validation', 'test'))
+
+
+def get_sym_dir(root_dir):  # type: (str) -> str
+    if path.basename(root_dir) == 'symlinked_datasets':
+        return path.join(root_dir, 'bmes')
+    elif path.basename(path.dirname(root_dir)) != 'symlinked_datasets':
+        return path.join(root_dir, 'symlinked_datasets', 'bmes')
 
 
 _update_generated_types_py()

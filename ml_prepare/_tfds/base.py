@@ -56,8 +56,12 @@ def base_builder(dataset_name, data_dir, init,
             if get_data_resp is not None \
                 and hasattr(get_data_resp, 'train') \
                 and isinstance(get_data_resp.train, str) \
-                and path.isdir(get_data_resp.train):
-                manual_dir = path.dirname(path.dirname(get_data_resp.train))
+                and path.isdir(get_data_resp.train) \
+                and path.basename(get_data_resp.train) != path.basename(manual_dir):
+
+                maybe_manual_dir = path.dirname(path.dirname(get_data_resp.train))
+                if path.basename(manual_dir) != path.basename(maybe_manual_dir):
+                    manual_dir = maybe_manual_dir
         else:
             logger.info('Using already created symlinks')
 
