@@ -43,6 +43,13 @@ Prepares your datasets for ingestion into ML pipelines.
                             3 or 'rgb' for red|green|blue (RGB); 1 or 'grayscale'
                             for grayscale
 
+### Matching what tfds automatically does with mnist and friends
+
+    $ python -m ml_prepare \
+             --dataset refuge \
+             --tfds "$HOME"'/tensorflow_datasets/downloads' \
+             --generate "$HOME"'/tensorflow_datasets'
+
 ---
 
 ## License

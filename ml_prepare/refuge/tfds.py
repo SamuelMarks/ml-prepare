@@ -45,6 +45,7 @@ class Refuge(tfds.core.GeneratorBasedBuilder):
         }[task]
         return tfds.core.DatasetInfo(
             builder=self,
+            version='0.0.2',
             description=self.builder_config.description,
             features=tfds.features.FeaturesDict({
                 'fundus': tfds.features.Image(shape=(h, w, num_channels)),
@@ -61,44 +62,46 @@ class Refuge(tfds.core.GeneratorBasedBuilder):
 
     def _split_generators(self, dl_manager):  # type: (Refuge, DownloadManager) -> [tfds.core.SplitGenerator]
         base_url = 'https://aipe-broad-dataset.cdn.bcebos.com/gno'
-        urls = {
+        urls_d = {
             'train': {
-                'fundi': 'REFUGE-Training400.zip',
                 'annotations': 'Annotation-Training400.zip',
+                'fundi': 'REFUGE-Training400.zip'
             },
             'validation': {
-                'fundi': 'REFUGE-Validation400.zip',
                 'annotations': 'REFUGE-Validation400-GT.zip',
+                'fundi': 'REFUGE-Validation400.zip'
             },
             'test': {
-                'fundi': 'REFUGE-Test400.zip',
+                'fundi': 'REFUGE-Test400.zip'
             }
         }
         urls = tf.nest.map_structure(  # pylint: disable=no-member
-            lambda x: os.path.join(base_url, x), urls)
+            lambda x: os.path.join(base_url, x), urls_d
+        )
 
         dl_manager._sizes_checksums.update({
-            url.format(base_url=base_url): size_sha256
-            for url, size_sha256 in {
-                '{base_url}/Annotation-Training400.zip':
-                    ('348137626', '5dc4b16c5e4c3f7c30106b0f22f0b44b7d4bdc18f12d3a0d2e0cadc41fd8e92b'),
-                '{base_url}/REFUGE-Test400.zip':
-                    ('360832658', 'ff8a2f14ec94812186310cbf490a69c6deed9d9377c1f9dd5ba05ee0ff1a99cb'),
-                '{base_url}/REFUGE-Training400.zip':
-                    ('716807624', 'c6d4f8cd66b0b558f8f63245803cba53e774ab6c5de9dfb7bd113a6e30fb183a'),
-                '{base_url}/REFUGE-Validation400-GT.zip':
-                    ('5320597', 'e535a7bf0ad7bc6e94ffa68f8bda5e4965be0972d31c44f610c60beb3e1a9e84'),
-                '{base_url}/REFUGE-Validation400.zip':
-                    ('360709102', 'c47e0fc74c8499bba263b65afe3bbcb66de0d7513c2da1f2118d283c424f48ca')
+            '{base_url}/{filename}'.format(base_url=base_url, filename=filename): (size, sha256)
+            for filename, (size, sha256) in {
+                urls_d['train']['annotations']:
+                    (348137626, '5dc4b16c5e4c3f7c30106b0f22f0b44b7d4bdc18f12d3a0d2e0cadc41fd8e92b'),
+                urls_d['train']['fundi']:
+                    (716807624, 'c6d4f8cd66b0b558f8f63245803cba53e774ab6c5de9dfb7bd113a6e30fb183a'),
+                urls_d['validation']['annotations']:
+                    (5320597, 'e535a7bf0ad7bc6e94ffa68f8bda5e4965be0972d31c44f610c60beb3e1a9e84'),
+                urls_d['validation']['fundi']:
+                    (363541061, '41867a62214bd2da5750bd9c4cbd2f25802f5340a3042732227ebe2286a867c6'),
+                urls_d['test']['fundi']:
+                    (360832658, 'ff8a2f14ec94812186310cbf490a69c6deed9d9377c1f9dd5ba05ee0ff1a99cb')
             }.items()
         })
         download_dirs = dl_manager.download(urls)
 
         return [
             tfds.core.SplitGenerator(
-                name=split,
-                gen_kwargs=dict(split=split, **download_dirs[split]))
-            for split in ('train', 'validation', 'test')]
+                name=split, gen_kwargs=dict(split=split, **download_dirs[split])
+            )
+            for split in ('train', 'validation', 'test')
+        ]
 
     def _generate_examples(self, split, **kwargs):
         return {
@@ -111,12 +114,15 @@ class Refuge(tfds.core.GeneratorBasedBuilder):
         with tf.io.gfile.GFile(annotations, 'rb') as annotations:
             annotations = zipfile.ZipFile(annotations)
             fov_data = _load_fovea(
-                annotations, 'Annotation-Training400/Fovea_location.xlsx')
+                annotations, os.path.join('Annotation-Training400', 'Fovea_location.xlsx')
+            )
             xys = {
                 fundus_fn: (x, y) for fundus_fn, x, y in zip(
                     fov_data['ImgName'],
                     fov_data['Fovea_X'],
-                    fov_data['Fovea_Y'])}
+                    fov_data['Fovea_Y']
+                )
+            }
 
             with tf.io.gfile.GFile(fundi, 'rb') as fundi:
                 fundi = zipfile.ZipFile(fundi)
@@ -171,14 +177,16 @@ class Refuge(tfds.core.GeneratorBasedBuilder):
         with tf.io.gfile.GFile(annotations, 'rb') as annotations:
             annotations = zipfile.ZipFile(annotations)
             fov_data = _load_fovea(
-                annotations, os.path.join('REFUGE-Validation400-GT', 'Fovea_locations.xlsx'))
+                annotations, os.path.join('REFUGE-Validation400-GT', 'Fovea_locations.xlsx')
+            )
             label_data = {
                 fundus_fn: (x, y, bool(label))
                 for fundus_fn, x, y, label in zip(
                     fov_data['ImgName'],
                     fov_data['Fovea_X'],
                     fov_data['Fovea_Y'],
-                    fov_data['Glaucoma Label'])
+                    fov_data['Glaucoma Label']
+                )
             }
 
             with tf.io.gfile.GFile(fundi, 'rb') as fundi:
