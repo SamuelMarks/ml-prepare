@@ -2,13 +2,14 @@ import tensorflow_datasets as tfds
 
 from ml_prepare._tfds.base import base_builder
 from ml_prepare.bmes import get_data as bmes_get_data
+from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.dr_spoc import get_data as dr_spoc_get_data
 from ml_prepare.dr_spoc.datasets import dr_spoc_datasets_set
 from ml_prepare.refuge import get_refuge_builder
 
 
 def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
-                       image_channels, image_height, image_width):
+                       image_channels=3, image_height=IMAGE_RESOLUTION[0], image_width=IMAGE_RESOLUTION[1]):
     """
 
     :param tfds_dir:
@@ -52,7 +53,8 @@ def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
     else:
         data_dir, manual_dir = generate_dir, tfds_dir
     builder = builder_factory(resolution=(image_height, image_width),
-                              rgb=image_channels, data_dir=data_dir)
+                              rgb={'rgb': True, 3: True, '3': True}.get(image_channels, False),
+                              data_dir=data_dir)
     builder.download_and_prepare(
         download_config=tfds.download.DownloadConfig(
             extract_dir=tfds_dir,

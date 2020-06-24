@@ -67,16 +67,15 @@ Prepares your datasets for ingestion into ML pipelines.
 
     $ tree -dQ --charset ascii
     .
+    |-- "bmes"
+    |   `-- "2.0.0.incomplete3PUC97"
     |-- "downloads"
-    |   `-- "tensorflow_datasets"
-    |       |-- "bmes"
-    |       |   `-- "2.0.0.incomplete3PUC97"
-    |       |-- "dr_spoc"
-    |       |   `-- "2.0.0"
-    |       |-- "dr_spoc_grad_and_no_grad"
-    |       |   `-- "2.0.0"
-    |       `-- "dr_spoc_no_no_grad"
-    |           `-- "2.0.0.incompleteD5IALU"
+    |-- "dr_spoc"
+    |   `-- "2.0.0"
+    |-- "dr_spoc_grad_and_no_grad"
+    |   `-- "2.0.0"
+    |-- "dr_spoc_no_no_grad"
+    |   `-- "2.0.0"
     |-- "refuge"
     |   `-- "r224-224-rgb"
     |       `-- "0.0.1"
@@ -125,7 +124,8 @@ Prepares your datasets for ingestion into ML pipelines.
                 |-- "non-referable"
                 `-- "referable"
     
-    57 directories
+    56 directories
+
 
 ---
 

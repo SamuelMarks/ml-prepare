@@ -66,7 +66,7 @@ def base_builder(dataset_name, data_dir, init,
             logger.info('Using already created symlinks')
 
         part = 'tensorflow_datasets'
-        if not data_dir.endswith(part):
+        if path.basename(data_dir) not in frozenset((part, 'tfds')):
             data_dir = path.join(data_dir, part)
 
         assert path.isdir(manual_dir), 'Manual directory {!r} does not exist. ' \

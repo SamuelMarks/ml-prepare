@@ -45,7 +45,6 @@ class Refuge(tfds.core.GeneratorBasedBuilder):
         }[task]
         return tfds.core.DatasetInfo(
             builder=self,
-            version='0.0.2',
             description=self.builder_config.description,
             features=tfds.features.FeaturesDict({
                 'fundus': tfds.features.Image(shape=(h, w, num_channels)),
