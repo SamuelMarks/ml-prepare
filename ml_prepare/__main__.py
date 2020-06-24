@@ -51,10 +51,10 @@ if __name__ == '__main__':
         _parser.error('tfds, generate, and/or retrieve must be specified')
 
     build_tfds_dataset(
+        dataset_name=args.dataset.value,
         generate_dir=args.generate,
         retrieve_dir=args.retrieve,
         tfds_dir=args.tfds,
-        dataset_name=args.dataset.value,
         image_channels=args.image_channels,
         image_height=args.image_height,
         image_width=args.image_width

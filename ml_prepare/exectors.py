@@ -8,9 +8,12 @@ from ml_prepare.dr_spoc.datasets import dr_spoc_datasets_set
 from ml_prepare.refuge import get_refuge_builder
 
 
-def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
-                       image_channels=3, image_height=IMAGE_RESOLUTION[0], image_width=IMAGE_RESOLUTION[1]):
+def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, image_channels=3,
+                       image_height=IMAGE_RESOLUTION[0], image_width=IMAGE_RESOLUTION[1]):
     """
+
+    :param dataset_name:
+    :type dataset_name: str
 
     :param tfds_dir:
     :type tfds_dir: str
@@ -21,8 +24,49 @@ def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
     :param retrieve_dir:
     :type retrieve_dir: str
 
+    :param image_channels:
+    :type image_channels: str or int
+
+    :param image_height:
+    :type image_height: int
+
+    :param image_width:
+    :type image_width: int
+
+    :rtype: tfds.core.DatasetBuilder
+    """
+    data_builder = builder(dataset_name, generate_dir, image_channels, image_height, image_width,
+                                       retrieve_dir, tfds_dir)
+    manual_dir = getattr(dataset_name, 'manual_dir')
+    delattr(dataset_name, 'manual_dir')
+
+    data_builder.download_and_prepare(
+        download_config=tfds.download.DownloadConfig(
+            extract_dir=tfds_dir,
+            manual_dir=manual_dir,
+            download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
+        ),
+        download_dir=tfds_dir
+    )
+    return data_builder
+
+
+def builder(dataset_name, generate_dir, image_channels,
+            image_height, image_width, retrieve_dir,
+            tfds_dir):
+    """
+
     :param dataset_name:
     :type dataset_name: str
+
+    :param tfds_dir:
+    :type tfds_dir: str
+
+    :param generate_dir:
+    :type generate_dir: str
+
+    :param retrieve_dir:
+    :type retrieve_dir: str
 
     :param image_channels:
     :type image_channels: str or int
@@ -32,6 +76,8 @@ def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
 
     :param image_width:
     :type image_width: int
+
+    :rtype: tfds.core.DatasetBuilder
     """
     builder_factory = None
     if dataset_name in dr_spoc_datasets_set:
@@ -42,7 +88,6 @@ def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
         builder_factory = get_refuge_builder
     else:
         raise NotImplementedError(dataset_name)
-
     if builder_factory is None:
         # noinspection PyUnboundLocalVariable
         builder_factory, data_dir, manual_dir = base_builder(
@@ -52,14 +97,8 @@ def build_tfds_dataset(tfds_dir, generate_dir, retrieve_dir, dataset_name,
         )
     else:
         data_dir, manual_dir = generate_dir, tfds_dir
-    builder = builder_factory(resolution=(image_height, image_width),
-                              rgb={'rgb': True, 3: True, '3': True}.get(image_channels, False),
-                              data_dir=data_dir)
-    builder.download_and_prepare(
-        download_config=tfds.download.DownloadConfig(
-            extract_dir=tfds_dir,
-            manual_dir=manual_dir,
-            download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
-        ),
-        download_dir=tfds_dir
-    )
+    data_builder = builder_factory(resolution=(image_height, image_width),
+                                   rgb={'rgb': True, 3: True, '3': True}.get(image_channels, False),
+                                   data_dir=data_dir)
+    setattr(builder_factory, 'manual_dir', manual_dir)
+    return data_builder
