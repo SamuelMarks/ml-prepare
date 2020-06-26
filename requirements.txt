@@ -8,3 +8,4 @@ openpyxl
 sas7bdat
 cloud-tpu-client
 redis
+Pillow
