@@ -8,8 +8,8 @@ from ml_prepare.dr_spoc.datasets import dr_spoc_datasets_set
 from ml_prepare.refuge import get_refuge_builder
 
 
-def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, image_channels=3,
-                       image_height=IMAGE_RESOLUTION[0], image_width=IMAGE_RESOLUTION[1]):
+def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, manual_dir,
+                       image_channels=3, image_height=IMAGE_RESOLUTION[0], image_width=IMAGE_RESOLUTION[1]):
     """
 
     :param dataset_name:
@@ -24,6 +24,9 @@ def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, image
     :param retrieve_dir:
     :type retrieve_dir: str
 
+    :param manual_dir:
+    :type manual_dir: str
+
     :param image_channels:
     :type image_channels: str or int
 
@@ -36,9 +39,10 @@ def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, image
     :rtype: tfds.core.DatasetBuilder
     """
     data_builder = builder(dataset_name, generate_dir, image_channels, image_height, image_width,
-                                       retrieve_dir, tfds_dir)
-    manual_dir = getattr(dataset_name, 'manual_dir')
-    delattr(dataset_name, 'manual_dir')
+                           retrieve_dir, tfds_dir)
+    if hasattr(data_builder, 'manual_dir'):
+        manual_dir = getattr(data_builder, 'manual_dir')
+        delattr(data_builder, 'manual_dir')
 
     data_builder.download_and_prepare(
         download_config=tfds.download.DownloadConfig(

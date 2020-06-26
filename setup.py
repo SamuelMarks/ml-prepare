@@ -37,7 +37,7 @@ if __name__ == '__main__':
         packages=find_packages(),
         package_dir={package_name: package_name},
         data_files=[
-            (_data_install_dir(), list(imap(_data_join, ifilter(path.isfile, listdir(_data_join()))))),
+            (_data_install_dir(), list(ifilter(path.isfile, imap(_data_join, listdir(_data_join()))))),
             (_data_cache_install_dir(), list(map(_data_cache_join, listdir(_data_cache_join()))))
         ]
     )
