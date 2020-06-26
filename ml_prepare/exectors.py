@@ -40,18 +40,27 @@ def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, manua
     """
     data_builder = builder(dataset_name, generate_dir, image_channels, image_height, image_width,
                            retrieve_dir, tfds_dir)
-    if manual_dir is None and hasattr(data_builder, 'manual_dir'):
+    download_and_prepare_kwargs = None
+    if hasattr(data_builder, 'download_and_prepare_kwargs'):
+        download_and_prepare_kwargs = getattr(data_builder, 'download_and_prepare_kwargs')
+        delattr(data_builder, 'download_and_prepare_kwargs')
+        if hasattr(data_builder, 'manual_dir'):
+            delattr(data_builder, 'manual_dir')
+    elif manual_dir is None and hasattr(data_builder, 'manual_dir'):
         manual_dir = getattr(data_builder, 'manual_dir')
         delattr(data_builder, 'manual_dir')
+        if download_and_prepare_kwargs is None:
+            download_and_prepare_kwargs = dict(
+                download_config=tfds.download.DownloadConfig(
+                    extract_dir=tfds_dir,
+                    manual_dir=manual_dir,
+                    download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
+                ),
+                download_dir=tfds_dir
+            )
+    assert download_and_prepare_kwargs is not None
 
-    data_builder.download_and_prepare(
-        download_config=tfds.download.DownloadConfig(
-            extract_dir=tfds_dir,
-            manual_dir=manual_dir,
-            download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
-        ),
-        download_dir=tfds_dir
-    )
+    data_builder.download_and_prepare(**download_and_prepare_kwargs)
     return data_builder
 
 
@@ -104,5 +113,13 @@ def builder(dataset_name, generate_dir, image_channels,
     data_builder = builder_factory(resolution=(image_height, image_width),
                                    rgb={'rgb': True, 3: True, '3': True}.get(image_channels, False),
                                    data_dir=data_dir)
-    setattr(builder_factory, 'manual_dir', manual_dir)
+    setattr(data_builder, 'manual_dir', manual_dir)
+    setattr(data_builder, 'download_and_prepare_kwargs', dict(
+        download_config=tfds.download.DownloadConfig(
+            extract_dir=tfds_dir,
+            manual_dir=manual_dir,
+            download_mode=tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS
+        ),
+        download_dir=tfds_dir
+    ))
     return data_builder
