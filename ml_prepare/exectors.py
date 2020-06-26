@@ -8,7 +8,7 @@ from ml_prepare.dr_spoc.datasets import dr_spoc_datasets_set
 from ml_prepare.refuge import get_refuge_builder
 
 
-def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, manual_dir,
+def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, manual_dir=None,
                        image_channels=3, image_height=IMAGE_RESOLUTION[0], image_width=IMAGE_RESOLUTION[1]):
     """
 
@@ -40,7 +40,7 @@ def build_tfds_dataset(dataset_name, tfds_dir, generate_dir, retrieve_dir, manua
     """
     data_builder = builder(dataset_name, generate_dir, image_channels, image_height, image_width,
                            retrieve_dir, tfds_dir)
-    if hasattr(data_builder, 'manual_dir'):
+    if manual_dir is None and hasattr(data_builder, 'manual_dir'):
         manual_dir = getattr(data_builder, 'manual_dir')
         delattr(data_builder, 'manual_dir')
 
