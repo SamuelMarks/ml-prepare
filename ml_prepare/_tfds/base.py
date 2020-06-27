@@ -4,6 +4,7 @@ from tempfile import mkdtemp
 
 import tensorflow as tf
 from tensorflow_datasets import public_api as tfds
+from tensorflow_datasets.image_classification import ImageLabelFolder
 
 from ml_prepare import get_logger
 from ml_prepare.datasets import datasets2classes
@@ -76,10 +77,10 @@ def base_builder(dataset_name, data_dir, init,
             manual_dir
         )
 
-    def builder_factory(resolution, rgb, data_dir):  # type: (int, bool, str) -> tfds.image.ImageLabelFolder
+    def builder_factory(resolution, rgb, data_dir):  # type: (int, bool, str) -> ImageLabelFolder
         print('resolution:'.ljust(20), '{!r}'.format(resolution), sep='')
 
-        class BaseImageLabelFolder(tfds.image.ImageLabelFolder):
+        class BaseImageLabelFolder(ImageLabelFolder):
             def _info(self):
                 return tfds.core.DatasetInfo(
                     builder=self,
