@@ -1,4 +1,4 @@
-import tensorflow_datasets as tfds
+from tensorflow_datasets import public_api as tfds
 
 from ml_prepare._tfds.base import base_builder
 from ml_prepare.bmes import get_data as bmes_get_data

@@ -627,7 +627,8 @@ def prepare_bmes_splits(root_dir):  # type: (str) -> Iterator[SplitFolder]
 
 
 def get_sym_dir(root_dir):  # type: (str) -> str
-    if path.basename(root_dir) == 'symlinked_datasets':
+    if path.basename(root_dir) == 'symlinked_datasets' \
+        or '{sep}symlinked_datasets{sep}'.format(sep=path.sep) in root_dir:
         return path.join(root_dir, 'bmes')
     elif path.basename(path.dirname(root_dir)) != 'symlinked_datasets':
         return path.join(root_dir, 'symlinked_datasets', 'bmes')

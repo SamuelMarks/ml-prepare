@@ -3,7 +3,7 @@ from os import path
 from tempfile import mkdtemp
 
 import tensorflow as tf
-import tensorflow_datasets as tfds
+from tensorflow_datasets import public_api as tfds
 
 from ml_prepare import get_logger
 from ml_prepare.datasets import datasets2classes
@@ -95,7 +95,7 @@ def base_builder(dataset_name, data_dir, init,
             def _generate_examples(self, label_images):
                 """Generate example for each image in the dict."""
 
-                temp_dir = mkdtemp(prefix='dr_spoc')
+                temp_dir = mkdtemp(prefix=dataset_name)
                 for label, image_paths in label_images.items():
                     for image_path in image_paths:
                         key = '/'.join((label, os.path.basename(image_path)))
@@ -140,12 +140,13 @@ base_builder.session = type('FakeSession', tuple(), {'_closed': True})()
 
 
 def _get_manual_dir(parent_dir, manual_dir):  # type: (str, str or None) -> str
-    return (
-        (manual_dir if path.basename(manual_dir) == 'symlinked_datasets'
-         else path.join(manual_dir, 'symlinked_datasets'))
-        if manual_dir is not None and path.isabs(manual_dir)
-        else path.join(parent_dir, 'symlinked_datasets')
-    )
+    return ((manual_dir
+             if path.basename(manual_dir) == 'symlinked_datasets' or '{sep}symlinked_datasets{sep}'
+             .format(sep=path.sep) in manual_dir
+             else path.join(manual_dir, 'symlinked_datasets'))
+            if manual_dir is not None and path.isabs(manual_dir)
+            else path.join(parent_dir, 'symlinked_datasets')
+            )
 
 
 __all__ = ['base_builder']
