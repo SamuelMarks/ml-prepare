@@ -1,6 +1,6 @@
 from ml_prepare.constants import IMAGE_RESOLUTION
-from ml_prepare.refuge.utils import base_rgb, base_gray, RefugeConfig
 from ml_prepare.refuge.tfds import Refuge
+from ml_prepare.refuge.utils import RefugeConfig, base_gray, base_rgb
 
 
 def get_refuge_builder(resolution=IMAGE_RESOLUTION, rgb=True, data_dir=None):
@@ -11,4 +11,4 @@ def get_refuge_builder(resolution=IMAGE_RESOLUTION, rgb=True, data_dir=None):
     return Refuge(config=config, data_dir=data_dir)
 
 
-__all__ = ['get_refuge_builder']
+__all__ = ["get_refuge_builder"]

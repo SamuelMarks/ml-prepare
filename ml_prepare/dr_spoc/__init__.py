@@ -17,15 +17,19 @@ def get_data(root_directory, manual_dir):
     :return:
     :rtype: ```str```
     """
-    directory, df, filename2cat, combined_df = main(root_directory=root_directory,
-                                                    manual_dir=manual_dir)
+    directory, df, filename2cat, combined_df = main(
+        root_directory=root_directory, manual_dir=manual_dir
+    )
 
     return directory  # combined_df
 
 
-if __name__ == '__main__':
-    get_data(root_directory=path.join(path.expanduser('~'),
-                                      'OneDrive - The University of Sydney (Students)'),
-             manual_dir=None)
+if __name__ == "__main__":
+    get_data(
+        root_directory=path.join(
+            path.expanduser("~"), "OneDrive - The University of Sydney (Students)"
+        ),
+        manual_dir=None,
+    )
 
-__all__ = ['get_data']
+__all__ = ["get_data"]

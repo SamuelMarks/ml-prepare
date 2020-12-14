@@ -2,6 +2,8 @@ ml_prepare
 ==========
 ![Python version range](https://img.shields.io/badge/python-2.7%E2%80%933.6+-blue.svg)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
 Prepares your datasets for ingestion into ML pipelines.
 
