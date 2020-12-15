@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     build_tfds_dataset(
         dataset_name=args.dataset.value,
-        generate_dir=args.generate,
+        generate_dir=args.generate,  # if path.basename(args.generate) == args.dataset.value else path.join(args.generate, args.dataset.value, "symlinked_datasets", args.dataset.value),
         retrieve_dir=args.retrieve,
         tfds_dir=args.tfds,
         image_channels=args.image_channels,

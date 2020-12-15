@@ -20,7 +20,7 @@ def build_tfds_dataset(
 ):
     """
 
-    :param dataset_name:
+    :param dataset_name: Name of dataset
     :type dataset_name: str
 
     :param tfds_dir:
@@ -77,7 +77,11 @@ def build_tfds_dataset(
             )
     assert download_and_prepare_kwargs is not None
 
-    data_builder.download_and_prepare(**download_and_prepare_kwargs)
+    if isinstance(data_builder, tfds.folder_dataset.ImageFolder):
+        ds_all_supervised = data_builder.as_dataset(as_supervised=True)
+        print("data_builder.info.splits:", data_builder.info.splits, ';')
+    else:
+        data_builder.download_and_prepare(**download_and_prepare_kwargs)
     return data_builder
 
 

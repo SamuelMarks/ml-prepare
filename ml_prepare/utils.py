@@ -1,7 +1,7 @@
 from collections import deque
 from functools import reduce
 from itertools import islice
-from os import path
+from os import makedirs, path
 from pprint import PrettyPrinter
 from random import sample
 
@@ -64,3 +64,19 @@ def run_once(f):
 
     wrapper.has_run = False
     return wrapper
+
+
+def infer_data_dir(directory, dataset_name):
+    if path.isdir(directory):
+        if not path.basename(directory) == dataset_name:
+            _dir = path.join("symlinked_datasets", dataset_name)
+            directory = path.normpath(directory)
+            if not directory.endswith(_dir):
+                fst = path.join(path.dirname(directory), _dir)
+                snd = path.join(path.join(path.dirname(directory), "downloads"), _dir)
+                directory = next(filter(path.isdir, (fst, snd)))
+                # print("made new data_dir of", data_dir)
+    else:
+        makedirs(directory)
+
+    return directory

@@ -47,12 +47,13 @@ Prepares your datasets for ingestion into ML pipelines.
 
 ### Matching what tfds automatically does with mnist and friends
 
-    $ export tfds="$HOME"'/tensorflow_datasets/downloads'
     $ export generate="$HOME"'/tensorflow_datasets'
+    $ export tfds="$generate"'/downloads'
+    $ mkdir -p "$tfds"
 
     $ python -m ml_prepare \
              --dataset 'bmes' \
-             --retrieve "$HOME"'/BMES123' \
+             --retrieve "$HOME"'/OneDrive - The University of Sydney (Students)/BMES123' \
              --tfds "$tfds" \
              --generate "$generate"
     

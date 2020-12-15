@@ -5,7 +5,7 @@ from collections import namedtuple
 from fnmatch import filter as fnmatch_filter
 from functools import partial
 from itertools import chain, groupby
-from operator import itemgetter
+from operator import attrgetter, itemgetter
 from os import environ, listdir, makedirs, path, remove, symlink, walk
 from platform import python_version_tuple
 from random import sample
@@ -40,8 +40,8 @@ logger = get_logger(modules[__name__].__name__)
 
 Datasets = namedtuple("Datasets", ("train", "validation", "test"))
 
-pickled_cache = {}
-just = 50
+pickled_cache = {}  # type: dict
+just = 50  # type: int
 RecImg = namedtuple("RecImg", ("rec", "imgs"))  # type: (generated_types.T0, [str])
 globals()[RecImg.__name__] = RecImg
 
@@ -80,7 +80,7 @@ def get_image_size(file_path):  # type: (str) -> (int, int)
     size = path.getsize(file_path)
 
     with open(file_path) as f:
-        data = f.read(25)
+        data = f.read(25)  # type: str
 
         if (size >= 10) and data[:6] in ("GIF87a", "GIF89a"):
             # GIFs
@@ -190,7 +190,7 @@ def _get_tbl(xlsx="glaucoma_20161205plus_Age23.xlsx"):
             rows_gen,
         )
     )
-    pickled_cache["tbl"] = tbl  # type: (str, get_data.RecImg)
+    pickled_cache["tbl"] = tbl  # type: Dict[str, get_data.RecImg]
     pickled_cache["tbl_ids"] = frozenset(tbl.keys())
     return tbl
 
@@ -296,7 +296,7 @@ def _populate_imgs(img_directory, skip_save=True):
         )
         assert total_imgs > 0
     else:
-        total_imgs = pickled_cache["total_imgs"]
+        total_imgs = pickled_cache["total_imgs"]  # type: int
 
     # Arghh, where are my views/slices?
     if not skip_save:
@@ -319,9 +319,9 @@ def _vanilla_stats(skip_save=True):
     global pickled_cache
     cache.update_locals(pickled_cache, locals())
 
-    tbl = pickled_cache["tbl"]
+    tbl = pickled_cache["tbl"]  # type: dict
     assert len(tbl.keys()) > 0
-    sas_tbl = pickled_cache["sas_tbl"]
+    sas_tbl = pickled_cache["sas_tbl"]  # type: dict
     id2ideyefname = pickled_cache["id2ideyefname"]
 
     if "oags1" not in pickled_cache or not len(pickled_cache["oags1"]):
@@ -793,7 +793,7 @@ def get_data(
         pickled_cache["bmes1_no_glaucoma_fnames"] = bmes1_no_glaucoma_fnames = (
             frozenset(
                 imap(
-                    lambda ideyefname: ideyefname.fname,
+                    attrgetter("fname"),
                     ifilter(
                         lambda ideyefname: path.basename(
                             path.dirname(path.dirname(path.dirname(ideyefname.fname)))
@@ -877,13 +877,11 @@ def prepare_bmes_splits(root_dir):  # type: (str) -> Iterator[SplitFolder]
 
 
 def get_sym_dir(root_dir):  # type: (str) -> str
-    if (
-        path.basename(root_dir) == "symlinked_datasets"
-        or "{sep}symlinked_datasets{sep}".format(sep=path.sep) in root_dir
-    ):
+    if "symlinked_datasets" in frozenset(root_dir.split(path.sep)):
+        if path.basename(root_dir) == "bmes":
+            return root_dir
         return path.join(root_dir, "bmes")
-    elif path.basename(path.dirname(root_dir)) != "symlinked_datasets":
-        return path.join(root_dir, "symlinked_datasets", "bmes")
+    return path.join(root_dir, "symlinked_datasets", "bmes")
 
 
 _update_generated_types_py()
