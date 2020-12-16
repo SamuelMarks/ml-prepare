@@ -1,6 +1,9 @@
+from functools import partial
+from os import path
+
 from tensorflow_datasets import public_api as tfds
 
-from ml_prepare._tfds.base import base_builder
+from ml_prepare._tfds.base import BaseImageLabelFolder, _get_manual_dir
 from ml_prepare.bmes import get_data as bmes_get_data
 from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.dr_spoc import get_data as dr_spoc_get_data
@@ -79,7 +82,7 @@ def build_tfds_dataset(
 
     if isinstance(data_builder, tfds.folder_dataset.ImageFolder):
         ds_all_supervised = data_builder.as_dataset(as_supervised=True)
-        print("data_builder.info.splits:", data_builder.info.splits, ';')
+        print("data_builder.info.splits:", data_builder.info.splits, ";")
     else:
         data_builder.download_and_prepare(**download_and_prepare_kwargs)
     return data_builder
@@ -119,26 +122,35 @@ def builder(
 
     :rtype: tfds.core.DatasetBuilder
     """
-    builder_factory = None
+    builder_factory, data_dir = None, None
     if dataset_name in dr_spoc_datasets_set:
         get_data = dr_spoc_get_data
     elif dataset_name == "bmes":
         get_data = bmes_get_data
+        data_dir = path.dirname(retrieve_dir)
+        get_data.get_data = partial(get_data.get_data, split_dir=tfds_dir)
     elif dataset_name == "refuge":
         builder_factory = get_refuge_builder
     else:
         raise NotImplementedError(dataset_name)
     if builder_factory is None:
-        # noinspection PyUnboundLocalVariable
-        builder_factory, data_dir, manual_dir = base_builder(
-            data_dir=tfds_dir,
-            init=generate_dir,
-            manual_dir=generate_dir,
-            parent_dir=retrieve_dir,
-            force_create=False,
-            dataset_name=dataset_name,
-            get_data=get_data,
-        )
+        data_dir = data_dir or tfds_dir
+        manual_dir = _get_manual_dir(tfds_dir, None)
+
+        def builder_factory(resolution, rgb, data_dir):
+            return BaseImageLabelFolder(
+                data_dir=data_dir,
+                resolution=resolution,
+                rgb=rgb,
+                # init=generate_dir,
+                # manual_dir=generate_dir,
+                # parent_dir=retrieve_dir,
+                # force_create=False,
+                retrieve_dir=retrieve_dir,
+                dataset_name=dataset_name,
+                get_data=get_data.get_data,
+            )
+
     else:
         data_dir, manual_dir = generate_dir, tfds_dir
     data_builder = builder_factory(

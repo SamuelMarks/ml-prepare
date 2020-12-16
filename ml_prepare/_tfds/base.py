@@ -1,13 +1,27 @@
+"""base dataset class."""
+import os
 import posixpath
 from os import path
 from tempfile import mkdtemp
+from typing import Optional
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
 from ml_prepare import get_logger
+from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.datasets import datasets2classes
-from ml_prepare.utils import infer_data_dir
+
+_DESCRIPTION = """
+Description is **formatted** as markdown.
+
+It should also contain any processing which has been applied (if any),
+(e.g. corrupted example skipped, images cropped,...):
+"""
+
+_CITATION = """
+"""
+
 
 logger = get_logger(
     ".".join(
@@ -19,158 +33,154 @@ logger = get_logger(
 )
 
 
-def base_builder(
-    dataset_name, data_dir, init, parent_dir, manual_dir, get_data, force_create=False
-):
-    """
+class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=True):
+    """DatasetBuilder for image datasets."""
 
-    :param dataset_name:
-    :type dataset_name: ``str``
+    VERSION = tfds.core.Version("1.0.0")
+    RELEASE_NOTES = {
+        "1.0.0": "Initial release.",
+    }
 
-    :param data_dir:
-    :type data_dir: ``str``
-
-    :param init:
-    :type init: ``str``
-
-    :param parent_dir:
-    :type parent_dir: ``str``
-
-    :param manual_dir:
-    :type manual_dir: ``str``
-
-    :param get_data: Function which parses data source and creates symlinks, returning symlink dir
-    :type get_data: ``(str,str or None) -> str``
-
-    :param force_create:
-    :type force_create: ``bool``
-
-    :return: builder_factory, data_dir, manual_dir
-    :rtype: ((int, bool, str) -> (tfds.folder_dataset.ImageFolder)), str, str
-    """
-
-    manual_dir = _get_manual_dir(parent_dir, manual_dir)
-    if init:
-        if manual_dir is None:
-            raise ValueError("`manual_dir` must be provided if `init is True`")
-        elif parent_dir is None:
-            raise ValueError("`parent_dir` must be provided if " "`init is True`")
-        elif force_create or not path.isdir(
-            path.join(_get_manual_dir(parent_dir, manual_dir), dataset_name)
-        ):
-            get_data_resp = get_data(parent_dir, manual_dir)
-            if (
-                get_data_resp is not None
-                and hasattr(get_data_resp, "train")
-                and isinstance(get_data_resp.train, str)
-                and path.isdir(get_data_resp.train)
-                and path.basename(get_data_resp.train) != path.basename(manual_dir)
-            ):
-
-                maybe_manual_dir = path.dirname(path.dirname(get_data_resp.train))
-                if path.basename(manual_dir) != path.basename(maybe_manual_dir):
-                    manual_dir = maybe_manual_dir
-        else:
-            logger.info("Using already created symlinks")
-
-        part = "tensorflow_datasets"
-        if len(frozenset(data_dir.split(path.sep)) & frozenset((part, "tfds"))) == 0:
-            data_dir = path.join(data_dir, part)
-
-        assert path.isdir(manual_dir), (
-            "Manual directory {!r} does not exist. "
-            "Create it and download/extract dataset artifacts "
-            "in there. Additional instructions: "
-            "This is a 'template' dataset.".format(manual_dir)
+    def __init__(
+        self,
+        *,
+        dataset_name,
+        data_dir,
+        rgb=True,
+        get_data=None,
+        retrieve_dir=None,
+        resolution=IMAGE_RESOLUTION,
+        config=None,
+        version=None,
+        shape: Optional[tfds.core.utils.Shape] = None,
+        dtype: Optional[tf.DType] = None,
+    ):
+        self.dataset_name = dataset_name
+        self.get_data = get_data
+        self._image_shape = shape
+        self._image_dtype = dtype
+        self.resolution = resolution
+        self.retrieve_dir = retrieve_dir
+        self.rgb = rgb
+        super(BaseImageLabelFolder, self).__init__(
+            data_dir=data_dir, config=config, version=version
         )
 
-    def builder_factory(
-        resolution, rgb, data_dir
-    ):  # type: (int, bool, str) -> tfds.folder_dataset.ImageFolder
-        print("resolution:".ljust(20), "{!r}".format(resolution), sep="")
-
-        data_dir = infer_data_dir(data_dir, dataset_name)
-
-        class BaseImageLabelFolder(tfds.folder_dataset.ImageFolder):
-            def _info(self):
-                info = tfds.core.DatasetInfo(
-                    builder=self,
-                    description="TODO",
-                    features=tfds.features.FeaturesDict(
-                        {
-                            "image": tfds.features.Image(  # shape=resolution + ((3 if rgb else 1),),
-                                encoding_format="jpeg",
-                                shape=self._image_shape,
-                                dtype=self._image_dtype,
-                            ),
-                            "label": tfds.features.ClassLabel(
-                                num_classes=datasets2classes[dataset_name]
-                            ),
-                            "image/filename": tfds.features.Text(),
-                        }
+    def _info(self) -> tfds.core.DatasetInfo:
+        """Returns the dataset metadata."""
+        # TODO(bmes): Specifies the tfds.core.DatasetInfo object
+        return tfds.core.DatasetInfo(
+            builder=self,
+            description=_DESCRIPTION,
+            features=tfds.features.FeaturesDict(
+                {
+                    "image": tfds.features.Image(  # shape=resolution + ((3 if rgb else 1),),
+                        encoding_format="jpeg",
+                        shape=self._image_shape,
+                        dtype=self._image_dtype,
                     ),
-                    supervised_keys=("image", "label"),
+                    "label": tfds.features.ClassLabel(
+                        num_classes=datasets2classes["bmes"]
+                    ),
+                    "image/filename": tfds.features.Text(),
+                }
+            ),
+            supervised_keys=("image", "label"),
+            homepage="https://dataset-homepage/",
+            citation=_CITATION,
+        )
+
+    def _split_generators(self, dl_manager: tfds.download.DownloadManager):
+        """Returns SplitGenerators."""
+        # Downloads the data and defines the splits
+
+        if self.get_data is not None:
+            return dict(
+                map(
+                    lambda _split_directory: (
+                        _split_directory[0],
+                        self._generate_examples(_split_directory[1]),
+                    ),
+                    self.get_data(self.retrieve_dir)._asdict().items(),
                 )
-                # deque(map(info.splits.add, map(tfds.core.splits.Split, ("train", "test", "valid"))), maxlen=0)
-                return info
+            )
 
-            def _generate_examples(self, label_images):
-                """Generate example for each image in the dict."""
+        return {
+            "train": self._generate_examples(self.data_dir),
+            "test": self._generate_examples(self.data_dir),
+            "valid": self._generate_examples(self.data_dir),
+        }
 
-                temp_dir = mkdtemp(prefix=dataset_name)
-                for label, image_paths in label_images.items():
-                    for image_path in image_paths:
-                        key = posixpath.sep.join(
-                            (label, posixpath.basename(image_path))
-                        )
+    def _generate_examples(self, label_images):
+        """Generate example for each image in the dict."""
 
-                        temp_image_filename = path.join(
-                            temp_dir,
-                            key.replace(posixpath.sep, "_").replace(path.sep, "_"),
-                        )
+        temp_dir = mkdtemp(prefix=self.dataset_name)
+        print("label_images:", label_images, ";")
 
-                        if base_builder.session._closed:
-                            base_builder.session = tf.compat.v1.Session()
-                            base_builder.session.__enter__()
+        if isinstance(label_images, str):
+            assert path.isdir(label_images)
+            (
+                self._split_examples,
+                labels,
+            ) = tfds.folder_dataset.image_folder._get_split_label_images(
+                path.dirname(label_images)
+            )
+            self.info.features["label"].names = sorted(labels)
+            split_dict = tfds.core.SplitDict(self.name)
 
-                        image_decoded = tf.image.decode_jpeg(
-                            tf.io.read_file(image_path), channels=3 if rgb else 1
-                        )
-                        resized = tf.image.resize(image_decoded, resolution)
-                        enc = tf.image.encode_jpeg(
-                            tf.cast(resized, tf.uint8),
-                            "rgb" if rgb else "grayscale",
-                            quality=100,
-                            chroma_downsampling=False,
-                        )
-                        fwrite = tf.io.write_file(tf.constant(temp_image_filename), enc)
-                        result = base_builder.session.run(fwrite)
+            label_images = {label: [] for label in self.info.features["label"].names}
 
-                        yield key, {
-                            "image/filename": temp_image_filename,
-                            "image": temp_image_filename,
-                            "label": label,
-                        }
-
-                print(
-                    "resolved all files, now you should delete: {!r}".format(temp_dir)
+            for split_name, examples in self._split_examples.items():
+                split_dict.add(
+                    tfds.core.SplitInfo(
+                        name=split_name,
+                        shard_lengths=[len(examples)],
+                    )
                 )
-                if not base_builder.session._closed:
-                    base_builder.session.__exit__(None, None, None)
 
-        builder = BaseImageLabelFolder(root_dir=data_dir)
-        builder.dataset_name = dataset_name
-        # builder.num
+                # TODO: This in a generator so it doesn't fill memory
+                for example in examples:
+                    label_images[example.label].append(example.image_path)
+            self.info.update_splits_if_different(split_dict)
 
-        return builder
+        for label, image_paths in label_images.items():
+            for image_path in image_paths:
+                key = posixpath.sep.join((label, posixpath.basename(image_path)))
 
-    if manual_dir is not None and not path.basename(manual_dir) == dataset_name:
-        manual_dir = path.join(manual_dir, dataset_name)
+                temp_image_filename = os.path.join(
+                    temp_dir,
+                    key.replace(posixpath.sep, "_").replace(os.path.sep, "_"),
+                )
 
-    return builder_factory, data_dir, manual_dir
+                if BaseImageLabelFolder.session._closed:
+                    BaseImageLabelFolder.session = tf.compat.v1.Session()
+                    BaseImageLabelFolder.session.__enter__()
+
+                image_decoded = tf.image.decode_jpeg(
+                    tf.io.read_file(image_path), channels=3 if self.rgb else 1
+                )
+                resized = tf.image.resize(image_decoded, self.resolution)
+                enc = tf.image.encode_jpeg(
+                    tf.cast(resized, tf.uint8),
+                    "rgb" if self.rgb else "grayscale",
+                    quality=100,
+                    chroma_downsampling=False,
+                )
+                fwrite = tf.io.write_file(tf.constant(temp_image_filename), enc)
+                result = BaseImageLabelFolder.session.run(fwrite)
+
+                yield key, {
+                    "image/filename": temp_image_filename,
+                    "image": temp_image_filename,
+                    "label": label,
+                }
+
+        print("resolved all files, now you should delete: {!r}".format(temp_dir))
+        if not BaseImageLabelFolder.session._closed:
+            BaseImageLabelFolder.session.__exit__(None, None, None)
 
 
-base_builder.session = type("FakeSession", tuple(), {"_closed": True})()
+BaseImageLabelFolder.session = type("FakeSession", tuple(), {"_closed": True})()
 
 
 def _get_manual_dir(parent_dir, manual_dir):  # type: (str, str or None) -> str
@@ -185,4 +195,4 @@ def _get_manual_dir(parent_dir, manual_dir):  # type: (str, str or None) -> str
     )
 
 
-__all__ = ["base_builder"]
+__all__ = ["BaseImageLabelFolder"]
