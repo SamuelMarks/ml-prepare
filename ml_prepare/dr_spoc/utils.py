@@ -747,7 +747,9 @@ def handle_db(root_directory):  # type: (str) -> pd.DataFrame
     db_df, db_fname_co = retrieve_from_db(root_directory=root_directory)
 
     # assert sum(map(itemgetter(1), filename_c.most_common()[1:])) // 3 == 1570
-    assert sum(map(itemgetter(1), db_fname_co.most_common())) == 589
+    got = sum(map(itemgetter(1), db_fname_co.most_common()))
+    expect = 588
+    assert got == expect, "Expected {} got {}".format(expect, got)
 
     # print('db_fname_co:'.ljust(20), '{:04d}'.format(sum(map(itemgetter(1), db_fname_co.most_common()))))
     # print('filename_c:'.ljust(just), '{:04d}'.format(sum(map(itemgetter(1), filename_c.most_common()[1:])) // 3))

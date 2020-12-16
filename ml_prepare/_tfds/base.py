@@ -3,7 +3,7 @@ import os
 import posixpath
 from os import path
 from tempfile import mkdtemp
-from typing import Optional
+from typing import Callable, NamedTuple, Optional, Tuple, Union
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -12,14 +12,14 @@ from ml_prepare import get_logger
 from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.datasets import datasets2classes
 
-_DESCRIPTION = """
+_DESCRIPTION: str = """
 Description is **formatted** as markdown.
 
 It should also contain any processing which has been applied (if any),
 (e.g. corrupted example skipped, images cropped,...):
 """
 
-_CITATION = """
+_CITATION: str = """
 """
 
 
@@ -36,26 +36,26 @@ logger = get_logger(
 class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=True):
     """DatasetBuilder for image datasets."""
 
-    VERSION = tfds.core.Version("1.0.0")
-    RELEASE_NOTES = {
+    VERSION: tfds.core.Version = tfds.core.Version("1.0.0")
+    RELEASE_NOTES: dict = {
         "1.0.0": "Initial release.",
     }
 
     def __init__(
         self,
         *,
-        dataset_name,
-        data_dir,
-        rgb=True,
-        get_data=None,
-        retrieve_dir=None,
-        resolution=IMAGE_RESOLUTION,
-        config=None,
-        version=None,
+        dataset_name: str,
+        data_dir: str,
+        rgb: bool = True,
+        get_data: Optional[Callable[[str], NamedTuple[Tuple[str, str]]]] = None,
+        retrieve_dir: Optional[str] = None,
+        resolution: Tuple[int, int] = IMAGE_RESOLUTION,
+        config: Union[None, str, tfds.core.BuilderConfig] = None,
+        version: Union[None, str, tfds.core.utils.Version] = None,
         shape: Optional[tfds.core.utils.Shape] = None,
         dtype: Optional[tf.DType] = None,
     ):
-        self.dataset_name = dataset_name
+        self.name = dataset_name
         self.get_data = get_data
         self._image_shape = shape
         self._image_dtype = dtype
@@ -90,9 +90,9 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
             citation=_CITATION,
         )
 
-    def _split_generators(self, dl_manager: tfds.download.DownloadManager):
+    def _split_generators(self, dl_manager: tfds.download.DownloadManager) -> dict:
         """Returns SplitGenerators."""
-        # Downloads the data and defines the splits
+        # Acquires the data and defines the splits
 
         if self.get_data is not None:
             return dict(
@@ -111,11 +111,10 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
             "valid": self._generate_examples(self.data_dir),
         }
 
-    def _generate_examples(self, label_images):
+    def _generate_examples(self, label_images: Union[str, dict]):
         """Generate example for each image in the dict."""
 
-        temp_dir = mkdtemp(prefix=self.dataset_name)
-        print("label_images:", label_images, ";")
+        temp_dir = mkdtemp(prefix=self.name)
 
         if isinstance(label_images, str):
             assert path.isdir(label_images)
@@ -183,7 +182,7 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
 BaseImageLabelFolder.session = type("FakeSession", tuple(), {"_closed": True})()
 
 
-def _get_manual_dir(parent_dir, manual_dir):  # type: (str, str or None) -> str
+def _get_manual_dir(parent_dir: str, manual_dir: Optional[str]) -> str:
     return (
         (
             manual_dir

@@ -81,8 +81,9 @@ def build_tfds_dataset(
     assert download_and_prepare_kwargs is not None
 
     if isinstance(data_builder, tfds.folder_dataset.ImageFolder):
-        ds_all_supervised = data_builder.as_dataset(as_supervised=True)
-        print("data_builder.info.splits:", data_builder.info.splits, ";")
+        raise NotImplementedError("tfds.folder_dataset.ImageFolder")
+        # ds_all_supervised = data_builder.as_dataset(as_supervised=True)
+        # print("data_builder.info.splits:", data_builder.info.splits, ";")
     else:
         data_builder.download_and_prepare(**download_and_prepare_kwargs)
     return data_builder
@@ -125,6 +126,11 @@ def builder(
     builder_factory, data_dir = None, None
     if dataset_name in dr_spoc_datasets_set:
         get_data = dr_spoc_get_data
+        get_data.get_data = partial(
+            dr_spoc_get_data.get_data,
+            manual_dir=_get_manual_dir(tfds_dir, None),
+            name=dataset_name,
+        )
     elif dataset_name == "bmes":
         get_data = bmes_get_data
         data_dir = path.dirname(retrieve_dir)
