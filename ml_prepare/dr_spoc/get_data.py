@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from collections import namedtuple
 from os import listdir, path
 
+from ml_prepare.constants import Datasets
 from ml_prepare.dr_spoc.utils import main
 
 
@@ -23,7 +23,6 @@ def get_data(root_directory, manual_dir, name):
     directory, df, filename2cat, combined_df = main(
         root_directory=root_directory, manual_dir=manual_dir
     )
-    Datasets = namedtuple("Datasets", ("train", "valid", "test"))
     split_parent = path.abspath(path.join(manual_dir, name))
     return Datasets(
         *map(lambda split: path.join(split_parent, split), listdir(split_parent))

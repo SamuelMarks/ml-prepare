@@ -59,7 +59,7 @@ Prepares your datasets for ingestion into ML pipelines.
     
     $ python -m ml_prepare \
              --dataset 'dr_spoc' \
-             --retrieve "$HOME"'/Fundus Photographs for AI' \
+             --retrieve "$HOME"'/OneDrive - The University of Sydney (Students)/Fundus Photographs for AI' \
              --tfds "$tfds" \
              --generate "$generate"
 

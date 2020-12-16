@@ -85,7 +85,13 @@ def build_tfds_dataset(
         # ds_all_supervised = data_builder.as_dataset(as_supervised=True)
         # print("data_builder.info.splits:", data_builder.info.splits, ";")
     else:
-        data_builder.download_and_prepare(**download_and_prepare_kwargs)
+        if download_and_prepare_kwargs[
+            "download_config"
+        ].download_mode is not tfds.core.dataset_builder.REUSE_DATASET_IF_EXISTS or not path.isdir(
+            path.join(tfds_dir, "downloads", dataset_name, str(data_builder.VERSION))
+        ):
+            data_builder.download_and_prepare(**download_and_prepare_kwargs)
+
     return data_builder
 
 
@@ -96,7 +102,7 @@ def builder(
     image_height,
     image_width,
     retrieve_dir,
-    tfds_dir,
+    tfds_dir=path.join(path.expanduser("~"), "tensorflow_datasets"),
 ):
     """
 

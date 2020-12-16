@@ -12,7 +12,7 @@ from random import sample
 from shutil import rmtree
 from socket import getfqdn
 from sys import modules
-from typing import Iterator
+from typing import Iterator, NamedTuple
 
 from pkg_resources import resource_filename
 from six import iteritems, itervalues, string_types
@@ -38,7 +38,7 @@ from ml_prepare.utils import create_random_numbers, it_consumes, run_once
 logger = get_logger(modules[__name__].__name__)
 # logger.setLevel(CRITICAL)
 
-Datasets = namedtuple("Datasets", ("train", "validation", "test"))
+Datasets = NamedTuple("Datasets", [("train", str), ("validation", str), ("test", str)])
 
 pickled_cache = {}  # type: dict
 just = 50  # type: int

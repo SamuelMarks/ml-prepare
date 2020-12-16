@@ -3,13 +3,12 @@ import os
 import posixpath
 from os import path
 from tempfile import mkdtemp
-from typing import Callable, NamedTuple, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
-
 from ml_prepare import get_logger
-from ml_prepare.constants import IMAGE_RESOLUTION
+from ml_prepare.constants import IMAGE_RESOLUTION, Datasets
 from ml_prepare.datasets import datasets2classes
 
 _DESCRIPTION: str = """
@@ -47,7 +46,7 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
         dataset_name: str,
         data_dir: str,
         rgb: bool = True,
-        get_data: Optional[Callable[[str], NamedTuple[Tuple[str, str]]]] = None,
+        get_data: Optional[Callable[[str], Datasets]] = None,
         retrieve_dir: Optional[str] = None,
         resolution: Tuple[int, int] = IMAGE_RESOLUTION,
         config: Union[None, str, tfds.core.BuilderConfig] = None,

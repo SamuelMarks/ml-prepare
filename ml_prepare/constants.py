@@ -1,4 +1,5 @@
 from os import path
+from typing import NamedTuple
 
 SAVE_FORMAT = "h5"
 # SAVE_FORMAT.__doc__ =
@@ -11,5 +12,7 @@ Either 'tf' or 'h5', indicating whether to save the model
 SAVE_FORMAT_WITH_SEP = "{}{}".format(path.extsep, SAVE_FORMAT)
 
 IMAGE_RESOLUTION = 224, 224
+
+Datasets = NamedTuple("Datasets", [("train", str), ("valid", str), ("test", str)])
 
 del path
