@@ -10,3 +10,4 @@ cloud-tpu-client
 redis
 Pillow
 sqlalchemy
+https://api.github.com/repos/offscale/argparse-utils/zipball#egg=argparse_utils

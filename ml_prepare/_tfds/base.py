@@ -7,6 +7,7 @@ from typing import Callable, Optional, Tuple, Union
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
 from ml_prepare import get_logger
 from ml_prepare.constants import IMAGE_RESOLUTION, Datasets
 from ml_prepare.datasets import datasets2classes
@@ -79,7 +80,7 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
                         dtype=self._image_dtype,
                     ),
                     "label": tfds.features.ClassLabel(
-                        num_classes=datasets2classes["bmes"]
+                        num_classes=datasets2classes[self.name]
                     ),
                     "image/filename": tfds.features.Text(),
                 }
@@ -88,6 +89,16 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
             homepage="https://dataset-homepage/",
             citation=_CITATION,
         )
+
+    def _description(self) -> dict:
+        return {
+            "image/filename": tf.io.FixedLenFeature([], tf.string),
+            "label": tf.io.FixedLenFeature([], tf.int64),
+            "image": tf.io.FixedLenSequenceFeature(
+                shape=self._image_shape, dtype=self._image_dtype
+            )
+            #'image_raw': tf.io.FixedLenFeature([], tf.string),
+        }
 
     def _split_generators(self, dl_manager: tfds.download.DownloadManager) -> dict:
         """Returns SplitGenerators."""
