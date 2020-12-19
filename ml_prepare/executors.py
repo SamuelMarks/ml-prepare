@@ -1,5 +1,5 @@
 from functools import partial
-from os import path
+from os import environ, path
 
 import tensorflow_datasets.public_api as tfds
 
@@ -101,7 +101,7 @@ def builder(
     image_height,
     image_width,
     retrieve_dir,
-    tfds_dir=path.join(path.expanduser("~"), "tensorflow_datasets"),
+    tfds_dir=environ.get("TFDS_DATA_DIR", path.join(path.expanduser("~"), "tensorflow_datasets")),
 ):
     """
 
