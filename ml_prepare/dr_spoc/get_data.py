@@ -23,7 +23,7 @@ def get_data(root_directory, manual_dir, name):
         root_directory=root_directory, manual_dir=manual_dir
     )
     split_parent = path.abspath(path.join(manual_dir, name))
-    from ml_prepare.executors import Datasets
+    from ml_prepare.datasets import Datasets
 
     return Datasets(
         *map(lambda split: path.join(split_parent, split), listdir(split_parent))

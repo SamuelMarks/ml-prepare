@@ -101,7 +101,9 @@ def builder(
     image_height,
     image_width,
     retrieve_dir,
-    tfds_dir=environ.get("TFDS_DATA_DIR", path.join(path.expanduser("~"), "tensorflow_datasets")),
+    tfds_dir=environ.get(
+        "TFDS_DATA_DIR", path.join(path.expanduser("~"), "tensorflow_datasets")
+    ),
 ):
     """
 
