@@ -3,14 +3,13 @@ import os
 import posixpath
 from os import path
 from tempfile import mkdtemp
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, NamedTuple, Optional, Tuple, Union
 
 import tensorflow as tf
-import tensorflow_datasets as tfds
+import tensorflow_datasets.public_api as tfds
 
-from ml_prepare import get_logger
-from ml_prepare.constants import IMAGE_RESOLUTION, Datasets
-from ml_prepare.datasets import datasets2classes
+import ml_prepare.datasets
+from ml_prepare.constants import IMAGE_RESOLUTION
 
 _DESCRIPTION: str = """
 Description is **formatted** as markdown.
@@ -21,16 +20,6 @@ It should also contain any processing which has been applied (if any),
 
 _CITATION: str = """
 """
-
-
-logger = get_logger(
-    ".".join(
-        (
-            path.basename(path.dirname(__file__)),
-            path.basename(__file__).rpartition(".")[0],
-        )
-    )
-)
 
 
 class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=True):
@@ -44,10 +33,15 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
     def __init__(
         self,
         *,
-        dataset_name: str,
         data_dir: str,
+        dataset_name: str,
         rgb: bool = True,
-        get_data: Optional[Callable[[str], Datasets]] = None,
+        get_data: Optional[
+            Callable[
+                [str],
+                NamedTuple("Datasets", [("train", str), ("valid", str), ("test", str)]),
+            ]
+        ] = None,
         retrieve_dir: Optional[str] = None,
         resolution: Tuple[int, int] = IMAGE_RESOLUTION,
         config: Union[None, str, tfds.core.BuilderConfig] = None,
@@ -56,6 +50,8 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
         dtype: Optional[tf.DType] = None,
     ):
         self.name = dataset_name
+        if self.name is None:
+            raise TypeError("Builders must have a name")
         self.get_data = get_data
         self._image_shape = shape
         self._image_dtype = dtype
@@ -68,7 +64,6 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
 
     def _info(self) -> tfds.core.DatasetInfo:
         """Returns the dataset metadata."""
-        # TODO(bmes): Specifies the tfds.core.DatasetInfo object
         return tfds.core.DatasetInfo(
             builder=self,
             description=_DESCRIPTION,
@@ -80,7 +75,7 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
                         dtype=self._image_dtype,
                     ),
                     "label": tfds.features.ClassLabel(
-                        num_classes=datasets2classes[self.name]
+                        num_classes=ml_prepare.datasets.datasets2classes[self.name]
                     ),
                     "image/filename": tfds.features.Text(),
                 }
@@ -128,6 +123,7 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
 
         if isinstance(label_images, str):
             assert path.isdir(label_images)
+            print("label_images:", label_images, ";")
             (
                 self._split_examples,
                 labels,

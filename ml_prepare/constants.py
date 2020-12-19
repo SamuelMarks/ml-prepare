@@ -1,5 +1,4 @@
 from os import path
-from typing import NamedTuple
 
 SAVE_FORMAT = "h5"
 # SAVE_FORMAT.__doc__ =
@@ -13,6 +12,6 @@ SAVE_FORMAT_WITH_SEP = "{}{}".format(path.extsep, SAVE_FORMAT)
 
 IMAGE_RESOLUTION = 224, 224
 
-Datasets = NamedTuple("Datasets", [("train", str), ("valid", str), ("test", str)])
-
 del path
+
+__all__ = ["IMAGE_RESOLUTION", "SAVE_FORMAT", "SAVE_FORMAT_WITH_SEP"]

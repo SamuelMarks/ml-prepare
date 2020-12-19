@@ -7,8 +7,10 @@ from os import path
 
 import yaml
 
+from ml_prepare import datasets
+
 __author__ = "Samuel Marks"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 
 def get_logger(name=None):
@@ -20,4 +22,13 @@ def get_logger(name=None):
 
 root_logger = get_logger()
 
-__all__ = ["root_logger", "get_logger", "__author__", "__version__"]
+# from .bmes import *
+# from .dr_spoc import *
+
+__all__ = [  # "Bmes", "DrSpoc", "DrSpocNoNoGrad", "DrSpocGradAndNoGrad",
+    "datasets",
+    "root_logger",
+    "get_logger",
+    "__author__",
+    "__version__",
+]

@@ -1,14 +1,13 @@
 from functools import partial
 from os import path
 
-from tensorflow_datasets import public_api as tfds
+import tensorflow_datasets.public_api as tfds
 
 from ml_prepare._tfds.base import BaseImageLabelFolder, _get_manual_dir
 from ml_prepare.bmes import get_data as bmes_get_data
 from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.dr_spoc import get_data as dr_spoc_get_data
 from ml_prepare.dr_spoc.datasets import dr_spoc_datasets_set
-from ml_prepare.refuge import get_refuge_builder
 
 
 def build_tfds_dataset(

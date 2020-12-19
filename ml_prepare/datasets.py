@@ -1,5 +1,6 @@
 from itertools import chain
 from os import listdir, path
+from typing import NamedTuple
 
 from ml_prepare.dr_spoc.datasets import dr_spoc_datasets
 from ml_prepare.utils import camel_case
@@ -24,3 +25,5 @@ datasets = tuple(
 datasets2classes = {
     dataset[1]: 3 if dataset[1] == "dr_spoc" else 2 for dataset in datasets
 }
+
+Datasets = NamedTuple("Datasets", [("train", str), ("valid", str), ("test", str)])

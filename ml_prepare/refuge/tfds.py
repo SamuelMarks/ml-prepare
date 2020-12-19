@@ -3,7 +3,7 @@ import zipfile
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_datasets import public_api as tfds
+import tensorflow_datasets.public_api as tfds
 from tensorflow_datasets.core.download import DownloadManager
 
 from ml_prepare.refuge.utils import (

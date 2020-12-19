@@ -9,7 +9,7 @@ from argparse_utils.actions.enum import EnumAction
 from ml_prepare import __version__, datasets
 from ml_prepare.constants import IMAGE_RESOLUTION
 from ml_prepare.datasets import datasets
-from ml_prepare.exectors import build_tfds_dataset
+from ml_prepare.executors import build_tfds_dataset
 
 
 def _build_parser():

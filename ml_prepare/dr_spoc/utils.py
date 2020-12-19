@@ -223,7 +223,7 @@ def prepare(root_directory, sheet_name):  # type: (str, str) -> pd.DataFrame
         skiprows=1,
         header=[0, 1],
         index_col=[0],
-        engine='openpyxl',
+        engine="openpyxl",
     ).transform(grad_mac2)
 
     if prepare.t > 0:
