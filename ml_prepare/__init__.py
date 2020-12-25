@@ -7,7 +7,10 @@ from os import path
 
 import yaml
 
-from ml_prepare import datasets
+try:
+    from ml_prepare import datasets
+except ImportError:
+    datasets = None  # tf isn't installed
 
 __author__ = "Samuel Marks"
 __version__ = "0.0.6"

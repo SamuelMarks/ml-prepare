@@ -5,7 +5,10 @@ from os import path
 from tempfile import mkdtemp
 from typing import Callable, NamedTuple, Optional, Tuple, Union
 
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None  # Just used for typing
 import tensorflow_datasets.public_api as tfds
 
 import ml_prepare.datasets
