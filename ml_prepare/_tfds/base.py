@@ -102,22 +102,22 @@ class BaseImageLabelFolder(tfds.core.GeneratorBasedBuilder, skip_registration=Tr
         """Returns SplitGenerators."""
         # Acquires the data and defines the splits
 
-        if self.get_data is not None:
-            return dict(
-                map(
-                    lambda _split_directory: (
-                        _split_directory[0],
-                        self._generate_examples(_split_directory[1]),
-                    ),
-                    self.get_data(self.retrieve_dir)._asdict().items(),
-                )
+        assert self.get_data is not None
+        return dict(
+            map(
+                lambda _split_directory: (
+                    _split_directory[0],
+                    self._generate_examples(_split_directory[1]),
+                ),
+                self.get_data(self.retrieve_dir)._asdict().items(),
             )
+        )
 
-        return {
-            "train": self._generate_examples(self.data_dir),
-            "test": self._generate_examples(self.data_dir),
-            "valid": self._generate_examples(self.data_dir),
-        }
+        # return {
+        #     "train": self._generate_examples(self.data_dir),
+        #     "test": self._generate_examples(self.data_dir),
+        #     "valid": self._generate_examples(self.data_dir),
+        # }
 
     def _generate_examples(self, label_images: Union[str, dict]):
         """Generate example for each image in the dict."""
